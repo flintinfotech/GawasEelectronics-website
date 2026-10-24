@@ -4,19 +4,6 @@ import ProductCard from './ProductCard'
 import { gridProducts, sliderProducts } from '../data/products'
 import { pic } from '../utils/img'
 
-export function Hero() {
-  return (
-    <section className="hero" style={{ backgroundImage: `linear-gradient(90deg, rgba(0,0,0,.75), rgba(0,0,0,.15)), url(${pic('gawas-hero', 1800, 900)})` }}>
-      <div className="hero-copy">
-        <p className="kicker">New Collection</p>
-        <h1>Galaxy Z Fold8<br />&amp; Fold8 Ultra</h1>
-        <p>Collection is live now ★★★★★</p>
-        <a href="#products" className="btn light">Shop Now</a>
-      </div>
-    </section>
-  )
-}
-
 export function ProductGrid() {
   return (
     <section id="products" className="container section">
