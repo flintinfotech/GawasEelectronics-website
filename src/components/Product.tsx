@@ -1,9 +1,9 @@
 import { Link } from 'react-router-dom'
-import { useStore } from '../context/StoreContext'
+import { toItem, useStore } from '../context/StoreContext'
 import { type ApiProduct, badgeClass, badgeOf, formatPrice, isNewArrival, onImgError, priceInfo, productImages } from '../services/productService'
 import { useProducts } from '../hooks/useProducts'
 
-// true karo to New Arrivals bhi neeche ke grid me aayenge. false = grid me sirf baaki products.
+// true = New Arrivals also appear in the grid below. false = grid shows only the other products.
 const SHOW_NEW_ARRIVALS_IN_GRID = false
 
 const css = `
@@ -29,20 +29,21 @@ const css = `
 .pc-price{text-align:center;font-size:15px}.pc-price s{color:#999;margin-left:6px;font-size:13px}
 .pc-sk{aspect-ratio:1/1.35;background:linear-gradient(90deg,#eee,#f7f7f7,#eee);background-size:200% 100%;animation:sk 1.4s infinite}
 .pc-state{text-align:center;color:#666;padding:40px 0}
+.pc-add{display:block;margin:10px auto 0;padding:9px 22px;border:1px solid var(--ink);border-radius:999px;font-size:14px;font-weight:500;transition:.2s}.pc-add:hover:not(:disabled){background:var(--ink);color:#fff}.pc-add:disabled{opacity:.5;cursor:not-allowed}
 .pc-more{text-align:center;margin-top:40px}
 @media(max-width:1024px){.pg-wrap{width:calc(100% - 32px)}.pc-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:600px){.pc-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:24px 12px}.pc-title{font-size:14px}}
 @media(hover:none){.pc-heart{opacity:1}}
 `
 
-// Product ka CSS ek baar inject karne ke liye
+// Injects the product CSS once
 export function ProductStyles() { return <style>{css}</style> }
 
 export function ProductCard({ p }: { p: ApiProduct }) {
-  const { wish, toggleWish } = useStore()
+  const { inWish, toggleWish, addToCart, inCart } = useStore()
   const id = String(p.productInfoId)
   const imgs = productImages(p)
-  const second = imgs[1] // 2nd photo sirf tab dikhao jab product ki 2nd image sach me ho
+  const second = imgs[1] // show 2nd photo only if the product really has one
   const { sell, mrp, off } = priceInfo(p)
   const badge = badgeOf(p)
   return (
@@ -52,33 +53,36 @@ export function ProductCard({ p }: { p: ApiProduct }) {
         <img src={imgs[0]} alt={p.productName} loading="lazy" className="a" onError={onImgError('c' + id)} />
         {second && <img src={second} alt="" loading="lazy" className="b" onError={onImgError('c' + id)} />}
       </Link>
-      <button className={`pc-heart ${wish.includes(id) ? 'on' : ''}`} aria-label="Wishlist" onClick={() => toggleWish(id)}>♥</button>
+      <button className={`pc-heart ${inWish(id) ? 'on' : ''}`} aria-label="Wishlist" onClick={() => toggleWish(toItem(p))}>♥</button>
       <Link to={`/product/${id}`} className="pc-title">{p.productName}</Link>
       <div className="pc-stars">{'★'.repeat(Math.round(Number(p.rating) || 5))} <small>({p.rating})</small></div>
       <div className="pc-price">{formatPrice(sell)} {mrp && <s>{formatPrice(mrp)}</s>}</div>
+      <button className="pc-add" disabled={p.stockQuantity <= 0} onClick={() => addToCart(toItem(p))}>
+        {p.stockQuantity <= 0 ? 'Out of stock' : inCart(id) ? 'Added ✓ (add more)' : 'Add to Cart'}
+      </button>
     </article>
   )
 }
 
-// Grid + loading + error + empty (Home aur Products page dono me)
-export function ProductList({ items, loading, error, count = 12 }: { items: ApiProduct[]; loading: boolean; error: boolean; count?: number }) {
+// Grid + loading + error + empty (used on Home and Products pages)
+export function ProductList({ items, loading, error, count = 12, emptyText = 'No products available right now.' }: { items: ApiProduct[]; loading: boolean; error: boolean; count?: number; emptyText?: string }) {
   let body
   if (loading) body = <div className="pc-grid">{Array.from({ length: count }, (_, i) => <div key={i} className="pc-sk" />)}</div>
-  else if (error) body = <p className="pc-state">Products load nahi ho paye. Thodi der baad try karo.</p>
-  else if (!items.length) body = <p className="pc-state">Abhi koi product available nahi hai.</p>
+  else if (error) body = <p className="pc-state">Could not load products. Please try again later.</p>
+  else if (!items.length) body = <p className="pc-state">{emptyText}</p>
   else body = <div className="pc-grid">{items.map(p => <ProductCard key={p.productInfoId} p={p} />)}</div>
   return <><ProductStyles />{body}</>
 }
 
-// HOME GRID (slider ke niche): New Arrivals chhodke baaki products, max 12 (4 x 3), neeche View All
+// HOME GRID (below the slider): all products except New Arrivals, max 12 (4 x 3), with View All below
 export default function ProductGrid() {
   const { items, loading, error } = useProducts(0, 50)
   const list = (SHOW_NEW_ARRIVALS_IN_GRID ? items : items.filter(p => !isNewArrival(p))).slice(0, 12)
-  if (!loading && !error && list.length === 0) return null // koi product nahi to section hi nahi dikhega
+  if (!loading && !error && list.length === 0) return null // no products -> hide the section
   return (
     <section id="products" className="pg-sec">
       <div className="pg-wrap">
-      <h2 className="h2">Latest Collection &amp; Best Offers</h2>  
+        <h2 className="h2">Latest Collection &amp; Best Offers</h2>
         <ProductList items={list} loading={loading} error={error} />
         <div className="pc-more"><Link to="/products" className="btn dark">View All</Link></div>
       </div>
