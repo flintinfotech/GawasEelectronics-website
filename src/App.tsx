@@ -1,13 +1,19 @@
 import { useEffect } from 'react'
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import { StoreProvider } from './context/StoreContext'
+import { AuthProvider } from './context/AuthContext'
 import Header from './components/layout/Header'
 import Footer from './components/layout/Footer'
 import Home from './pages/Home'
 import Products from './pages/Products'
 import ProductDetail from './pages/ProductDetail'
+import Cart from './pages/Cart'
+import Wishlist from './pages/Wishlist'
+import Checkout from './pages/Checkout'
+import Search from './pages/Search'
+import Login from './pages/Login'
 
-// Page badalne par upar scroll
+// Scroll to top on page change
 function ScrollToTop() {
   const { pathname } = useLocation()
   useEffect(() => {
@@ -18,19 +24,26 @@ function ScrollToTop() {
 
 export default function App() {
   return (
-    <StoreProvider>
-      <BrowserRouter>
-        <ScrollToTop />
-        <Header />
-        <main>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/products" element={<Products />} />
-            <Route path="/product/:id" element={<ProductDetail />} />
-          </Routes>
-        </main>
-        <Footer />
-      </BrowserRouter>
-    </StoreProvider>
+    <AuthProvider>
+      <StoreProvider>
+        <BrowserRouter>
+          <ScrollToTop />
+          <Header />
+          <main>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/products" element={<Products />} />
+              <Route path="/product/:id" element={<ProductDetail />} />
+              <Route path="/cart" element={<Cart />} />
+              <Route path="/wishlist" element={<Wishlist />} />
+              <Route path="/checkout" element={<Checkout />} />
+              <Route path="/search" element={<Search />} />
+              <Route path="/login" element={<Login />} />
+            </Routes>
+          </main>
+          <Footer />
+        </BrowserRouter>
+      </StoreProvider>
+    </AuthProvider>
   )
 }
