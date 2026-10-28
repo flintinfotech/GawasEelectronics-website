@@ -64,7 +64,7 @@ export function ProductCard({ p }: { p: ApiProduct }) {
 export function ProductList({ items, loading, error, count = 12 }: { items: ApiProduct[]; loading: boolean; error: boolean; count?: number }) {
   let body
   if (loading) body = <div className="pc-grid">{Array.from({ length: count }, (_, i) => <div key={i} className="pc-sk" />)}</div>
-  else if (error) body = <p className="pc-state">Products load nahi ho paye. Thodi der baad try karo.</p>
+  else if (error) body = <p className="pc-state">“We couldn’t load the products. Please try again shortly.”</p>
   else if (!items.length) body = <p className="pc-state">Abhi koi product available nahi hai.</p>
   else body = <div className="pc-grid">{items.map(p => <ProductCard key={p.productInfoId} p={p} />)}</div>
   return <><ProductStyles />{body}</>
