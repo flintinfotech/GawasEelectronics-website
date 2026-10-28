@@ -4,11 +4,11 @@ import { useProducts } from '../hooks/useProducts'
 import { isNewArrival, onImgError, priceInfo, productImages } from '../services/productService'
 
 const css = `
-.ns-sec{background:#f4f4f6;padding:64px 0 72px}
+.ns-sec{background:#f4f4f6;padding:64px 0 72px;overflow:hidden}
 .ns-head,.ns-wrap{width:min(95%,1700px);margin-inline:auto}
 .ns-head .sub{margin-bottom:0}
 .ns-wrap{position:relative;margin-top:28px}
-.ns{display:flex;gap:20px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding:2px}.ns::-webkit-scrollbar{display:none}
+.ns{display:flex;gap:20px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;padding:2px}.ns::-webkit-scrollbar{display:none}
 .ns-card{flex:0 0 21%;min-width:230px;scroll-snap-align:start;display:flex;flex-direction:column;background:#fff;color:var(--ink);border-radius:28px;padding:22px}
 .ns-card.dark{background:#000;color:#fff}
 .ns-new{align-self:flex-start;display:inline-flex;align-items:center;gap:7px;background:linear-gradient(90deg,#ff6a1a,#ff9a3c);color:#fff;font-size:12px;font-weight:700;letter-spacing:.1em;padding:5px 13px 5px 10px;border-radius:999px;box-shadow:0 4px 14px rgba(255,106,26,.35)}
@@ -23,8 +23,18 @@ const css = `
 .ns-sk{flex:0 0 21%;min-width:230px;aspect-ratio:1/1.5;border-radius:28px;background:linear-gradient(90deg,#e8e8ea,#f1f1f3,#e8e8ea);background-size:200% 100%;animation:sk 1.4s infinite}
 .ns-arrow{position:absolute;top:50%;transform:translateY(-50%);z-index:5;width:46px;height:46px;border-radius:50%;background:#fff;box-shadow:0 4px 16px rgba(0,0,0,.18);font-size:26px;line-height:1}
 .ns-arrow.l{left:-22px}.ns-arrow.r{right:-22px}
-@media(max-width:1024px){.ns-card,.ns-sk{flex-basis:31%}}
-@media(max-width:600px){.ns-sec{padding:44px 0 52px}.ns-head,.ns-wrap{width:calc(100% - 32px)}.ns-card,.ns-sk{flex-basis:74%}.ns-arrow{display:none}}
+@media(max-width:1280px){.ns-card,.ns-sk{flex-basis:26%}}
+@media(max-width:1024px){.ns-card,.ns-sk{flex-basis:34%}.ns-arrow{display:none}}
+@media(max-width:820px){.ns-card,.ns-sk{flex-basis:44%}}
+@media(max-width:600px){
+.ns-sec{padding:40px 0 44px}
+.ns-head{width:100%;padding-inline:16px}.ns-head .sub{font-size:15px}
+.ns-wrap{width:100%;margin-top:20px}
+.ns{gap:14px;padding:2px 16px;scroll-padding-inline:16px}
+.ns-card,.ns-sk{flex:0 0 78%;max-width:320px;min-width:0}
+.ns-card{padding:18px;border-radius:24px}.ns-sk{border-radius:24px}
+.ns-card h3{font-size:20px}.ns-sub,.ns-price{font-size:14px}.ns-btn{padding:10px 20px;margin-bottom:14px}
+}
 `
 
 // HOME SLIDER: sirf wo products jinka Label = "New Arrival" hai (admin panel se)

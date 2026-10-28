@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { toItem, useStore } from '../context/StoreContext'
 import CartQty from '../components/CartQty'
+import RelatedProducts from '../components/RelatedProducts'
 import { type ApiProduct, badgeClass, badgeOf, formatPrice, getProductById, onImgError, priceInfo, productImages } from '../services/productService'
 
 const css = `
@@ -66,38 +67,43 @@ function Detail({ id }: { id?: string }) {
   const badge = badgeOf(p)
   const inStock = p.stockQuantity > 0
   return (
-    <section className="container section">
-      <style>{css}</style>
-      <Link to="/products" className="pd-back">← Back to products</Link>
-      <div className="pd-grid">
-        <div className="pd-gallery">
-          <img className="pd-main" src={imgs[img]} alt={p.productName} onError={onImgError('d' + p.productInfoId)} />
-          <div className="pd-thumbs">{imgs.map((s, i) => <button key={i} className={i === img ? 'on' : ''} onClick={() => setImg(i)}><img src={s} alt="" onError={onImgError('d' + p.productInfoId)} /></button>)}</div>
-        </div>
-        <div className="pd-info">
-          {badge && <span className={`pd-badge ${badgeClass(badge)}`}>{badge}</span>}
-          <h1>{p.productName}</h1>
-          <p className="pd-meta">{p.brandName} · {p.categoryName} · {p.subCategoryName}</p>
-          <div className="pd-stars">{'★'.repeat(Math.round(Number(p.rating) || 5))} <small>{p.rating}</small></div>
-          <div className="pd-price">{formatPrice(sell)} {mrp && <s>{formatPrice(mrp)}</s>} {off > 0 && <em>{off}% off</em>}</div>
-          <p>{p.description}</p>
-          {p.feature && <ul className="pd-feat"><li>{p.feature}</li></ul>}
-          <p className={`pd-stock ${inStock ? 'ok' : 'no'}`}>{inStock ? `In stock (${p.stockQuantity} available)` : 'Out of stock'}</p>
+    <>
+      <section className="container section">
+        <style>{css}</style>
+        <Link to="/products" className="pd-back">← Back to products</Link>
+        <div className="pd-grid">
+          <div className="pd-gallery">
+            <img className="pd-main" src={imgs[img]} alt={p.productName} onError={onImgError('d' + p.productInfoId)} />
+            <div className="pd-thumbs">{imgs.map((s, i) => <button key={i} className={i === img ? 'on' : ''} onClick={() => setImg(i)}><img src={s} alt="" onError={onImgError('d' + p.productInfoId)} /></button>)}</div>
+          </div>
+          <div className="pd-info">
+            {badge && <span className={`pd-badge ${badgeClass(badge)}`}>{badge}</span>}
+            <h1>{p.productName}</h1>
+            <p className="pd-meta">{p.brandName} · {p.categoryName} · {p.subCategoryName}</p>
+            <div className="pd-stars">{'★'.repeat(Math.round(Number(p.rating) || 5))} <small>{p.rating}</small></div>
+            <div className="pd-price">{formatPrice(sell)} {mrp && <s>{formatPrice(mrp)}</s>} {off > 0 && <em>{off}% off</em>}</div>
+            <p>{p.description}</p>
+            {p.feature && <ul className="pd-feat"><li>{p.feature}</li></ul>}
+            <p className={`pd-stock ${inStock ? 'ok' : 'no'}`}>{inStock ? `In stock (${p.stockQuantity} available)` : 'Out of stock'}</p>
 
-          {/* One product = one cart entry: once added, quantity is changed with the stepper */}
-          {inCart(pid)
-            ? <div className="pd-buy"><CartQty id={pid} /><Link to="/cart" className="btn dark" style={{ textAlign: 'center' }}>View Cart</Link></div>
-            : <div className="pd-buy">
-                <div className="pd-qty"><button onClick={() => setQty(Math.max(1, qty - 1))}>−</button><span>{qty}</span><button onClick={() => setQty(Math.min(p.stockQuantity || 1, qty + 1))}>+</button></div>
-                <button className="btn dark" disabled={!inStock} onClick={() => addToCart(toItem(p, qty))}>Add to Cart</button>
-              </div>}
+            {/* One product = one cart entry: once added, quantity is changed with the stepper */}
+            {inCart(pid)
+              ? <div className="pd-buy"><CartQty id={pid} /><Link to="/cart" className="btn dark" style={{ textAlign: 'center' }}>View Cart</Link></div>
+              : <div className="pd-buy">
+                  <div className="pd-qty"><button onClick={() => setQty(Math.max(1, qty - 1))}>−</button><span>{qty}</span><button onClick={() => setQty(Math.min(p.stockQuantity || 1, qty + 1))}>+</button></div>
+                  <button className="btn dark" disabled={!inStock} onClick={() => addToCart(toItem(p, qty))}>Add to Cart</button>
+                </div>}
 
-          <div className="pd-buy">
-            <button className="btn buy" disabled={!inStock} onClick={() => { startBuyNow(toItem(p, qty)); nav('/checkout?mode=buynow') }}>Buy Now</button>
-            <button className={`pd-wish ${inWish(pid) ? 'on' : ''}`} onClick={() => toggleWish(toItem(p))}>{inWish(pid) ? '♥ Wishlisted' : '♡ Wishlist'}</button>
+            <div className="pd-buy">
+              <button className="btn buy" disabled={!inStock} onClick={() => { startBuyNow(toItem(p, qty)); nav('/checkout?mode=buynow') }}>Buy Now</button>
+              <button className={`pd-wish ${inWish(pid) ? 'on' : ''}`} onClick={() => toggleWish(toItem(p))}>{inWish(pid) ? '♥ Wishlisted' : '♡ Wishlist'}</button>
+            </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+
+      {/* Same brand ke baaki products (Join Our List se upar) */}
+      <RelatedProducts product={p} />
+    </>
   )
 }
