@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useStore } from '../context/StoreContext'
-import { type ApiProduct, badgeOf, formatPrice, getProductById, onImgError, priceInfo, productImages } from '../services/productService'
+import { type ApiProduct, badgeClass, badgeOf, formatPrice, getProductById, onImgError, priceInfo, productImages } from '../services/productService'
 
 const css = `
 .pd-back{color:#666;display:inline-block;margin-bottom:18px}
@@ -13,8 +13,11 @@ const css = `
 .pd-thumbs button.on{border-color:var(--ink)}.pd-thumbs img{width:100%;height:100%;object-fit:cover}
 .pd-info{display:flex;flex-direction:column;gap:14px}
 .pd-info h1{font-size:clamp(26px,3.5vw,36px);letter-spacing:-.02em;line-height:1.15}
-.pd-badge{align-self:flex-start;background:#2e9e4f;color:#fff;font-size:11px;font-weight:700;padding:4px 9px;border-radius:4px;letter-spacing:.04em}
-.pd-badge.gold{background:var(--gold);color:#222}
+.pd-badge{align-self:flex-start;color:#fff;font-size:11px;font-weight:700;padding:5px 12px;border-radius:999px;letter-spacing:.08em}
+.pd-badge.new{background:linear-gradient(90deg,#ff6a1a,#ff9a3c)}
+.pd-badge.offer{background:linear-gradient(90deg,#e0245e,#ff5c7c)}
+.pd-badge.latest{background:linear-gradient(90deg,#5b3df5,#8b72ff)}
+.pd-badge.best-seller{background:linear-gradient(90deg,#c9ab4a,#e8cf74);color:#2a2200}
 .pd-meta{color:#666}.pd-stars{color:#f5b301}.pd-stars small{color:#555}
 .pd-price{font-size:24px;font-weight:700}.pd-price s{color:#999;font-size:16px;font-weight:400;margin-left:6px}.pd-price em{font-style:normal;color:#2e9e4f;font-size:14px;margin-left:8px}
 .pd-feat{padding-left:20px;color:#444;line-height:1.9}
@@ -67,7 +70,7 @@ function Detail({ id }: { id?: string }) {
           <div className="pd-thumbs">{imgs.map((s, i) => <button key={i} className={i === img ? 'on' : ''} onClick={() => setImg(i)}><img src={s} alt="" onError={onImgError('d' + p.productInfoId)} /></button>)}</div>
         </div>
         <div className="pd-info">
-          {badge && <span className={`pd-badge ${badge === 'BEST SELLER' ? 'gold' : ''}`}>{badge}</span>}
+          {badge && <span className={`pd-badge ${badgeClass(badge)}`}>{badge}</span>}
           <h1>{p.productName}</h1>
           <p className="pd-meta">{p.brandName} · {p.categoryName} · {p.subCategoryName}</p>
           <div className="pd-stars">{'★'.repeat(Math.round(Number(p.rating) || 5))} <small>{p.rating}</small></div>
