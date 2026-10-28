@@ -28,7 +28,7 @@ export default function Lifestyle() {
       <style>{css}</style>
       <div className="lf-head">
         <h2>For Every Version of You</h2>
-        <p>From the street to the boardroom to your quiet moments. Regalia belongs everywhere you do.</p>
+        {/* <p>From the street to the boardroom to your quiet moments. Regalia belongs everywhere you do.</p> */}
       </div>
       <div className="lf">
         {loading

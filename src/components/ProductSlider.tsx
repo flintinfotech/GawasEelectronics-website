@@ -38,7 +38,7 @@ export default function ProductSlider() {
   return (
     <section className="ns-sec">
       <style>{css}</style>
-      <div className="ns-head"><h2 className="h2">Phone Cases &amp; Accessories</h2><p className="sub">For the all new iPhones</p></div>
+      <div className="ns-head"><h2 className="h2">Phone Cases &amp; Accessories</h2><p className="sub">New Covers for Every Device</p></div>
       <div className="ns-wrap">
         <button className="ns-arrow l" aria-label="Previous" onClick={() => go(-1)}>‹</button>
         <div className="ns" ref={ref}>
