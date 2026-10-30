@@ -1,5 +1,5 @@
 // STORE: cart + wishlist + buy-now (saved in localStorage, survives refresh)
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { type ApiProduct, priceInfo, productImages } from '../services/productService'
 
 // Cart / wishlist keep a small snapshot of the product (no extra API call needed)
@@ -37,6 +37,9 @@ type Ctx = {
   buyNow: StoreItem | null // the single "Buy Now" product (not added to the cart)
   startBuyNow: (item: StoreItem) => void
   clearBuyNow: () => void
+
+  // Apply fresh stock numbers (id -> stock) to cart, wishlist and buy-now items
+  syncStock: (stocks: Record<string, number>) => void
 }
 
 const C = createContext<Ctx | null>(null)
@@ -65,6 +68,19 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   useEffect(() => save(localStorage, 'gawas-wish', wish), [wish])
   useEffect(() => save(sessionStorage, 'gawas-buynow', buyNow), [buyNow])
 
+  // Latest stock arrived: update snapshots, and reduce quantity if it is above the new stock
+  const syncStock = useCallback((stocks: Record<string, number>) => {
+    const fix = (i: StoreItem): StoreItem => {
+      const s = stocks[i.id]
+      if (s === undefined || (s === i.stock && (s <= 0 || i.qty <= s))) return i
+      return { ...i, stock: s, qty: s > 0 ? Math.min(i.qty, s) : i.qty }
+    }
+    const apply = (list: StoreItem[]) => { const next = list.map(fix); return next.some((x, k) => x !== list[k]) ? next : list }
+    setCart(apply)
+    setWish(apply)
+    setBuyNow(b => (b ? fix(b) : b))
+  }, [])
+
   const value = useMemo<Ctx>(() => ({
     cart,
     cartCount: cart.reduce((n, i) => n + i.qty, 0),
@@ -85,7 +101,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     buyNow,
     startBuyNow: item => setBuyNow({ ...item, qty: clamp(item.qty, item.stock) }),
     clearBuyNow: () => setBuyNow(null),
-  }), [cart, wish, buyNow])
+    syncStock,
+  }), [cart, wish, buyNow, syncStock])
 
   return <C.Provider value={value}>{children}</C.Provider>
 }

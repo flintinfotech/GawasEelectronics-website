@@ -1,4 +1,5 @@
 import Logo from './Logo'
+import { Link } from 'react-router-dom'
 import { DEVICES, SITE } from '../../config/site'
 
 const css = `
@@ -22,8 +23,8 @@ export default function Footer() {
         <form onSubmit={e => { e.preventDefault(); alert('Subscribed!') }}><input type="email" required placeholder="Enter your email" /><button>Subscribe</button></form></section>
       <div className="container fgrid">
         <div><Logo light /><p className="muted">{SITE.tagline}. Designed in India for real life.</p><p className="muted">{SITE.email}<br />{SITE.phone}</p></div>
-        <div><h4>Company</h4>{['About Us', 'Contact Us', 'Our Blogs', 'Privacy Policy', 'Terms of Service'].map(l => <a key={l} href="#">{l}</a>)}</div>
-        <div><h4>Need Help?</h4>{['Track Order', "FAQ's", 'Return & Exchange', 'Cancellation', 'Shipping Information'].map(l => <a key={l} href="#">{l}</a>)}</div>
+        <div><h4>Company</h4><Link to="/about">About Us</Link><Link to="/contact">Contact Us</Link><a href="#">Our Blogs</a><Link to="/privacy-policy">Privacy Policy</Link><Link to="/disclaimer">Disclaimer</Link><a href="#">Terms of Service</a></div>
+        <div><h4>Need Help?</h4><a href="#">Track Order</a><a href="#">FAQ's</a><Link to="/return-policy">Return &amp; Exchange</Link><Link to="/refund-policy">Refund Policy</Link><a href="#">Cancellation</a><a href="#">Shipping Information</a></div>
         <div><h4>Latest Models</h4>{DEVICES.map(l => <a key={l} href="#">{l}</a>)}</div>
       </div>
       <div className="container copy">© 2026 Gawas Electronics. All rights reserved.</div>

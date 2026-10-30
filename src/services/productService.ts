@@ -4,6 +4,7 @@ import { api } from '../lib/apiClient'
 import { apiEndpoints } from './apiEndpoints'
 import config from '../config/config'
 import { pic } from '../utils/img'
+import { availableStock } from './stockLedger'
 
 /* ---------- Types ---------- */
 export type ProductImage = {
@@ -35,7 +36,8 @@ export type ApiProduct = {
 }
 
 export type ProductPage = { items: ApiProduct[]; total: number }
-
+// Stock shown in the website = API stock minus what was already ordered (see stockLedger.ts)
+const withStock = (p: ApiProduct): ApiProduct => ({ ...p, stockQuantity: availableStock(String(p.productInfoId), p.stockQuantity) })
 /* ---------- API calls ---------- */
 // Same request ek saath 2 jagah se aaye (jaise slider + grid) to API sirf ek baar call hoti hai
 const inflight = new Map<string, Promise<ProductPage>>()
@@ -45,24 +47,22 @@ export function getAllProducts(page = 0, size = 12): Promise<ProductPage> {
   let req = inflight.get(key)
   if (!req) {
     req = api.post<ApiProduct[]>(apiEndpoints.getAllProducts(page, size), {})
-      .then(list => ({ items: list.filter(p => p.isActive === 'Y'), total: list[0]?.totalCount ?? 0 }))
+      .then(list => ({ items: list.filter(p => p.isActive === 'Y').map(withStock), total: list[0]?.totalCount ?? 0 }))
       .finally(() => inflight.delete(key))
     inflight.set(key, req)
   }
   return req
 }
 
-// Pehle POST, 405 aaye to GET try karta hai
 export async function getProductById(id: number | string): Promise<ApiProduct> {
   const url = apiEndpoints.getProductById(id)
   try {
-    return await api.post<ApiProduct>(url, {})
+    return withStock(await api.post<ApiProduct>(url, {}))
   } catch (e) {
-    if (String(e).includes('405')) return api.get<ApiProduct>(url)
+    if (String(e).includes('405')) return withStock(await api.get<ApiProduct>(url))
     throw e
   }
 }
-
 /* ---------- Helpers ---------- */
 export const formatPrice = (n: number) => '₹' + n.toLocaleString('en-IN')
 
