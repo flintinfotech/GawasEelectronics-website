@@ -26,6 +26,7 @@ export type ApiProduct = {
   subCategoryName: string
   stockQuantity: number
   brandName: string
+  brandId?: number // used by RelatedProducts to filter by brand
   modelName?: string // backend bheje to model filter me kaam aata hai
   isDiscountActive: 'Y' | 'N'
   discountPercent: number
@@ -37,6 +38,9 @@ export type ApiProduct = {
 }
 
 export type ProductPage = { items: ApiProduct[]; total: number }
+
+// Stock shown in the website = API stock minus what was already ordered (see stockLedger.ts)
+const withStock = (p: ApiProduct): ApiProduct => ({ ...p, stockQuantity: availableStock(String(p.productInfoId), p.stockQuantity) })
 
 /* ---------- Filter (Shop By Device: brand / model) ---------- */
 export type ProductFilter = { brandId?: number; brandName?: string; modelId?: number; modelName?: string }
@@ -94,7 +98,7 @@ function loadAll(filter: ProductFilter): Promise<ApiProduct[]> {
   const hit = cache.get(key)
   if (hit && Date.now() - hit.at < CACHE_MS) return hit.req
   const req = api.post<ApiProduct[]>(apiEndpoints.getAllProducts(0, FETCH_ALL), payloadOf(filter)) // payload me brand/model
-    .then(list => (list ?? []).filter(p => p.isActive === 'Y' && matches(p, filter)))
+    .then(list => (list ?? []).filter(p => p.isActive === 'Y' && matches(p, filter)).map(withStock))
     .catch(e => { cache.delete(key); throw e }) // fail ho to agli baar dobara try
   cache.set(key, { at: Date.now(), req })
   return req

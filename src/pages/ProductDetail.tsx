@@ -86,20 +86,23 @@ function Detail({ id }: { id?: string }) {
             {p.feature && <ul className="pd-feat"><li>{p.feature}</li></ul>}
             <p className={`pd-stock ${inStock ? 'ok' : 'no'}`}>{inStock ? `In stock (${p.stockQuantity} available)` : 'Out of stock'}</p>
 
-          {/* One product = one cart entry: once added, quantity is changed with the stepper */}
-          {inCart(pid)
-            ? <div className="pd-buy"><CartQty id={pid} /><Link to="/cart" className="btn dark" style={{ textAlign: 'center' }}>View Cart</Link></div>
-            : <div className="pd-buy">
-                <div className="pd-qty"><button onClick={() => setQty(Math.max(1, qty - 1))}>−</button><span>{qty}</span><button onClick={() => setQty(Math.min(p.stockQuantity || 1, qty + 1))}>+</button></div>
-                <button className="btn dark" disabled={!inStock} onClick={() => addToCart(toItem(p, qty))}>{inStock ? 'Add to Cart' : 'Out of stock'}</button>
-              </div>}
+            {/* One product = one cart entry: once added, quantity is changed with the stepper */}
+            {inCart(pid)
+              ? <div className="pd-buy"><CartQty id={pid} /><Link to="/cart" className="btn dark" style={{ textAlign: 'center' }}>View Cart</Link></div>
+              : <div className="pd-buy">
+                  <div className="pd-qty"><button onClick={() => setQty(Math.max(1, qty - 1))}>−</button><span>{qty}</span><button onClick={() => setQty(Math.min(p.stockQuantity || 1, qty + 1))}>+</button></div>
+                  <button className="btn dark" disabled={!inStock} onClick={() => addToCart(toItem(p, qty))}>{inStock ? 'Add to Cart' : 'Out of stock'}</button>
+                </div>}
 
-          <div className="pd-buy">
-            <button className="btn buy" disabled={!inStock} onClick={() => { startBuyNow(toItem(p, qty)); nav('/checkout?mode=buynow') }}>{inStock ? 'Buy Now' : 'Out of stock'}</button>
-            <button className={`pd-wish ${inWish(pid) ? 'on' : ''}`} onClick={() => toggleWish(toItem(p))}>{inWish(pid) ? '♥ Wishlisted' : '♡ Wishlist'}</button>
+            <div className="pd-buy">
+              <button className="btn buy" disabled={!inStock} onClick={() => { startBuyNow(toItem(p, qty)); nav('/checkout?mode=buynow') }}>{inStock ? 'Buy Now' : 'Out of stock'}</button>
+              <button className={`pd-wish ${inWish(pid) ? 'on' : ''}`} onClick={() => toggleWish(toItem(p))}>{inWish(pid) ? '♥ Wishlisted' : '♡ Wishlist'}</button>
+            </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+
+      <RelatedProducts product={p} />
+    </>
   )
 }
