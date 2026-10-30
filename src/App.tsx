@@ -12,6 +12,12 @@ import Wishlist from './pages/Wishlist'
 import Checkout from './pages/Checkout'
 import Search from './pages/Search'
 import Login from './pages/Login'
+import ReturnPolicy from './pages/ReturnPolicy'
+import RefundPolicy from './pages/RefundPolicy'
+import PrivacyPolicy from './pages/PrivacyPolicy'
+import Disclaimer from './pages/Disclaimer'
+import AboutUs from './pages/AboutUs'
+import ContactUs from './pages/ContactUs'
 
 // Scroll to top on page change
 function ScrollToTop() {
@@ -39,6 +45,12 @@ export default function App() {
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/search" element={<Search />} />
               <Route path="/login" element={<Login />} />
+              <Route path="/return-policy" element={<ReturnPolicy />} />
+              <Route path="/refund-policy" element={<RefundPolicy />} />
+              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+              <Route path="/disclaimer" element={<Disclaimer />} />
+              <Route path="/about" element={<AboutUs />} />
+              <Route path="/contact" element={<ContactUs />} />
             </Routes>
           </main>
           <Footer />

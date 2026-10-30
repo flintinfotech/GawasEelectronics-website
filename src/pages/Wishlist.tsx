@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useStore } from '../context/StoreContext'
 import { formatPrice, onImgError } from '../services/productService'
+import { useSyncStock } from '../hooks/useSyncStock'
 
 const css = `
 .wl-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:32px 20px;margin-top:24px}
@@ -18,6 +19,7 @@ const css = `
 
 export default function Wishlist() {
   const { wish, removeWish, addToCart, inCart } = useStore()
+    useSyncStock(wish.map(i => i.id)) // refresh stock when the wishlist opens
   return (
     <section className="container section">
       <style>{css}</style>

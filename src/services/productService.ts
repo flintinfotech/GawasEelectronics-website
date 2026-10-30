@@ -4,6 +4,7 @@ import { api } from '../lib/apiClient'
 import { apiEndpoints } from './apiEndpoints'
 import config from '../config/config'
 import { pic } from '../utils/img'
+import { availableStock } from './stockLedger'
 
 /* ---------- Types ---------- */
 export type ProductImage = {
@@ -25,6 +26,7 @@ export type ApiProduct = {
   subCategoryName: string
   stockQuantity: number
   brandName: string
+  brandId?: number // used by RelatedProducts to filter by brand
   modelName?: string // backend bheje to model filter me kaam aata hai
   isDiscountActive: 'Y' | 'N'
   discountPercent: number
@@ -36,6 +38,9 @@ export type ApiProduct = {
 }
 
 export type ProductPage = { items: ApiProduct[]; total: number }
+
+// Stock shown in the website = API stock minus what was already ordered (see stockLedger.ts)
+const withStock = (p: ApiProduct): ApiProduct => ({ ...p, stockQuantity: availableStock(String(p.productInfoId), p.stockQuantity) })
 
 /* ---------- Filter (Shop By Device: brand / model) ---------- */
 export type ProductFilter = { brandId?: number; brandName?: string; modelId?: number; modelName?: string }
@@ -93,7 +98,7 @@ function loadAll(filter: ProductFilter): Promise<ApiProduct[]> {
   const hit = cache.get(key)
   if (hit && Date.now() - hit.at < CACHE_MS) return hit.req
   const req = api.post<ApiProduct[]>(apiEndpoints.getAllProducts(0, FETCH_ALL), payloadOf(filter)) // payload me brand/model
-    .then(list => (list ?? []).filter(p => p.isActive === 'Y' && matches(p, filter)))
+    .then(list => (list ?? []).filter(p => p.isActive === 'Y' && matches(p, filter)).map(withStock))
     .catch(e => { cache.delete(key); throw e }) // fail ho to agli baar dobara try
   cache.set(key, { at: Date.now(), req })
   return req
@@ -104,17 +109,15 @@ export async function getAllProducts(page = 0, size = 12, filter: ProductFilter 
   return { items: all.slice(page * size, page * size + size), total: all.length }
 }
 
-// Pehle POST, 405 aaye to GET try karta hai
 export async function getProductById(id: number | string): Promise<ApiProduct> {
   const url = apiEndpoints.getProductById(id)
   try {
-    return await api.post<ApiProduct>(url, {})
+    return withStock(await api.post<ApiProduct>(url, {}))
   } catch (e) {
-    if (String(e).includes('405')) return api.get<ApiProduct>(url)
+    if (String(e).includes('405')) return withStock(await api.get<ApiProduct>(url))
     throw e
   }
 }
-
 /* ---------- Helpers ---------- */
 export const formatPrice = (n: number) => '₹' + n.toLocaleString('en-IN')
 
