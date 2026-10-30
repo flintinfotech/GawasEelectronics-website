@@ -26,6 +26,7 @@ export type ApiProduct = {
   subCategoryName: string
   stockQuantity: number
   brandName: string
+  modelName?: string // backend bheje to model filter me kaam aata hai
   isDiscountActive: 'Y' | 'N'
   discountPercent: number
   discountedPrice: number
@@ -36,22 +37,72 @@ export type ApiProduct = {
 }
 
 export type ProductPage = { items: ApiProduct[]; total: number }
-// Stock shown in the website = API stock minus what was already ordered (see stockLedger.ts)
-const withStock = (p: ApiProduct): ApiProduct => ({ ...p, stockQuantity: availableStock(String(p.productInfoId), p.stockQuantity) })
-/* ---------- API calls ---------- */
-// Same request ek saath 2 jagah se aaye (jaise slider + grid) to API sirf ek baar call hoti hai
-const inflight = new Map<string, Promise<ProductPage>>()
 
-export function getAllProducts(page = 0, size = 12): Promise<ProductPage> {
-  const key = `${page}-${size}`
-  let req = inflight.get(key)
-  if (!req) {
-    req = api.post<ApiProduct[]>(apiEndpoints.getAllProducts(page, size), {})
-      .then(list => ({ items: list.filter(p => p.isActive === 'Y').map(withStock), total: list[0]?.totalCount ?? 0 }))
-      .finally(() => inflight.delete(key))
-    inflight.set(key, req)
+/* ---------- Filter (Shop By Device: brand / model) ---------- */
+export type ProductFilter = { brandId?: number; brandName?: string; modelId?: number; modelName?: string }
+
+// Menu ke link ke liye URL: productsUrl({ brandId: 112, brandName: 'Apple' }) -> /products?brandId=112&brandName=Apple
+export function productsUrl(f: ProductFilter = {}): string {
+  const sp = new URLSearchParams()
+  if (f.brandId) { sp.set('brandId', String(f.brandId)); if (f.brandName) sp.set('brandName', f.brandName) }
+  if (f.modelId) { sp.set('modelId', String(f.modelId)); if (f.modelName) sp.set('modelName', f.modelName) }
+  const q = sp.toString()
+  return q ? `/products?${q}` : '/products'
+}
+
+// URL (?brandId=..&modelId=..) se filter wapas nikalta hai
+export function filterFromParams(sp: URLSearchParams): ProductFilter {
+  const num = (k: string) => { const n = Number(sp.get(k)); return n > 0 ? n : undefined }
+  return {
+    brandId: num('brandId'), brandName: sp.get('brandName') ?? undefined,
+    modelId: num('modelId'), modelName: sp.get('modelName') ?? undefined,
   }
+}
+
+// ⚠ BACKEND PAYLOAD: yahi se API ko filter jata hai. Backend ke asli field names alag ho to SIRF yaha badlo.
+// (Jo field backend ko nahi chahiye wo Spring ignore kar deta hai)
+
+const payloadOf = (f: ProductFilter) => ({
+  ...(f.modelId
+    ? {
+        brandId: f.brandId,
+        productName: f.modelName || '',
+      }
+    : f.brandId
+      ? { brandId: f.brandId }
+      : {}),
+})
+
+
+// Safety: backend filter na kare tab bhi galat brand/model ke product na dikhe
+const same = (a?: string | null, b?: string) => (a ?? '').trim().toLowerCase() === (b ?? '').trim().toLowerCase()
+function matches(p: ApiProduct, f: ProductFilter) {
+  if (f.brandName && !same(p.brandName, f.brandName)) return false
+  if (f.modelName && p.modelName !== undefined && !same(p.modelName, f.modelName)) return false // product me model ho tabhi check
+  return true
+}
+
+/* ---------- API calls ---------- */
+// Backend har page me inactive products bhi bhejta hai, isliye page par 12 se kam dikhte the (9 + 2 wali problem).
+// Fix: ek hi baar saare products mangwao, active + filter wale chhaant lo, phir 12-12 ke page khud banao.
+const FETCH_ALL = 500
+const CACHE_MS = 30_000 // 30 second tak wahi list use hoti hai (page badalne par API dobara nahi jati)
+const cache = new Map<string, { at: number; req: Promise<ApiProduct[]> }>()
+
+function loadAll(filter: ProductFilter): Promise<ApiProduct[]> {
+  const key = JSON.stringify(filter)
+  const hit = cache.get(key)
+  if (hit && Date.now() - hit.at < CACHE_MS) return hit.req
+  const req = api.post<ApiProduct[]>(apiEndpoints.getAllProducts(0, FETCH_ALL), payloadOf(filter)) // payload me brand/model
+    .then(list => (list ?? []).filter(p => p.isActive === 'Y' && matches(p, filter)))
+    .catch(e => { cache.delete(key); throw e }) // fail ho to agli baar dobara try
+  cache.set(key, { at: Date.now(), req })
   return req
+}
+
+export async function getAllProducts(page = 0, size = 12, filter: ProductFilter = {}): Promise<ProductPage> {
+  const all = await loadAll(filter)
+  return { items: all.slice(page * size, page * size + size), total: all.length }
 }
 
 export async function getProductById(id: number | string): Promise<ApiProduct> {

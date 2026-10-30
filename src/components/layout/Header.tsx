@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import Logo from './Logo'
-import { DEVICES } from '../../config/site'
+import DeviceMenu from './DeviceMenu'
 import { useStore } from '../../context/StoreContext'
 import { useAuth } from '../../context/AuthContext'
 
@@ -11,8 +11,6 @@ const css = `
 .nav{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
 .nav-links{display:flex;gap:34px;list-style:none;font-weight:500}.nav-links>li{position:relative;padding:24px 0}
 .nav-links a:hover{color:var(--accent)}
-.mega{position:absolute;top:100%;left:-20px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px;min-width:220px;display:none;flex-direction:column;box-shadow:0 20px 40px rgba(0,0,0,.08)}
-.has-menu:hover .mega{display:flex}.mega a{padding:10px 14px;border-radius:8px}.mega a:hover{background:var(--bone)}
 .nav-icons{display:flex;gap:4px}.icon-btn{position:relative;padding:8px;display:grid;place-items:center}
 .dot{position:absolute;top:0;right:0;background:var(--accent);color:#fff;font-size:10px;min-width:17px;height:17px;border-radius:9px;display:grid;place-items:center}
 .burger{display:none}
@@ -38,10 +36,8 @@ export default function Header() {
         <button className="icon-btn burger" aria-label="Menu" onClick={() => setOpen(true)}>{I('M3 6h18M3 12h18M3 18h18')}</button>
         <Link to="/" aria-label="Home"><Logo /></Link>
         <ul className="nav-links">
-          <li className="has-menu"><Link to="/products">Shop By Device</Link>
-            <div className="mega">{DEVICES.map(d => <Link key={d} to="/products">{d}</Link>)}</div></li>
+          <li><DeviceMenu /></li>
           <li><Link to="/products">Gawas Originals</Link></li>
-          <li><Link to="/products">Accessories</Link></li>
         </ul>
         <div className="nav-icons">
           <Link to="/wishlist" className="icon-btn hide-sm" aria-label="Wishlist">{I('M12 21s-8-5.2-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.8-8 11-8 11z')}{wish.length > 0 && <b className="dot">{wish.length}</b>}</Link>
@@ -56,10 +52,8 @@ export default function Header() {
       <aside className={`drawer ${open ? 'show' : ''}`}>
         <button className="icon-btn close" aria-label="Close" onClick={close}>{I('M6 6l12 12M18 6L6 18')}</button>
         <Logo />
-        <Link to="/products" onClick={close}>Shop By Device</Link>
+        <DeviceMenu variant="mobile" onNavigate={close} />
         <Link to="/products" onClick={close}>Gawas Originals</Link>
-        <Link to="/products" onClick={close}>Accessories</Link>
-        <hr />{DEVICES.map(d => <Link key={d} className="dsub" to="/products" onClick={close}>{d}</Link>)}
       </aside>
     </header>
   )

@@ -70,6 +70,8 @@ export function ProductList({ items, loading, error, count = 12, emptyText = 'No
   if (loading) body = <div className="pc-grid">{Array.from({ length: count }, (_, i) => <div key={i} className="pc-sk" />)}</div>
   else if (error) body = <p className="pc-state">Could not load products. Please try again later.</p>
   else if (!items.length) body = <p className="pc-state">{emptyText}</p>
+  else if (error) body = <p className="pc-state">“We couldn’t load the products. Please try again shortly.”</p>
+  else if (!items.length) body =<p className="pc-state">No products are available at the moment.</p>
   else body = <div className="pc-grid">{items.map(p => <ProductCard key={p.productInfoId} p={p} />)}</div>
   return <><ProductStyles />{body}</>
 }

@@ -9,4 +9,7 @@ export const apiEndpoints = {
   getAllProducts: (page = 0, size = 12, sort = 'productInfoId,desc') =>
     `/flint/product/getAllProducts?page=${page}&size=${size}&sort=${sort}`,
   getProductById: (id: number | string) => `/flint/product/getProductById/${id}`,
+
+  // ---------- Static Data (dropdowns: Brand Name, Model, Label, Section ...) ----------
+  getStaticDataDD: () => `/flint/staticData/getStaticDataDD`,
 }
