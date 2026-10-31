@@ -1,9 +1,9 @@
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import AuthForm from '../components/AuthForm'
+import AuthShell from '../components/AuthShell'
 
 export default function Login() {
   const { user } = useAuth()
   if (user) return <Navigate to="/" replace />
-  return <section className="container section"><AuthForm title="Login / Register" /></section>
+  return <AuthShell initialMode="login" />
 }

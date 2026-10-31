@@ -12,6 +12,7 @@ import Wishlist from './pages/Wishlist'
 import Checkout from './pages/Checkout'
 import Search from './pages/Search'
 import Login from './pages/Login'
+import Register from './pages/Register'
 import ReturnPolicy from './pages/ReturnPolicy'
 import RefundPolicy from './pages/RefundPolicy'
 import PrivacyPolicy from './pages/PrivacyPolicy'
@@ -45,6 +46,7 @@ export default function App() {
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/search" element={<Search />} />
               <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
               <Route path="/return-policy" element={<ReturnPolicy />} />
               <Route path="/refund-policy" element={<RefundPolicy />} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />

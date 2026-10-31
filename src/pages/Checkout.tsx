@@ -4,7 +4,7 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useStore } from '../context/StoreContext'
-import { useAuth } from '../context/AuthContext'
+import { useAuth, fullName } from '../context/AuthContext'
 import AuthForm from '../components/AuthForm'
 import ItemRow, { itemRowCss } from '../components/ItemRow'
 import { formatPrice, getProductById } from '../services/productService'
@@ -106,13 +106,13 @@ export default function Checkout() {
               <Link to={isBuyNow ? '/products' : '/cart'}>{isBuyNow ? 'Back to products' : 'Go to cart'}</Link>
             </div>
           )}
-          <label className="full">Full name<input name="name" required autoComplete="name" defaultValue={user.name} /></label>
-          <label>Phone<input name="phone" required type="tel" pattern="[0-9]{10}" title="10 digit mobile number" autoComplete="tel" defaultValue={user.phone} /></label>
+                    <label className="full">Full name<input name="name" required autoComplete="name" defaultValue={fullName(user)} /></label>
+          <label>Phone<input name="phone" required type="tel" pattern="[0-9]{10}" title="10 digit mobile number" autoComplete="tel" defaultValue={user.mobileNumber} /></label>
           <label>Email<input name="email" type="email" autoComplete="email" defaultValue={user.email} /></label>
           <label className="full">Address<textarea name="address" required rows={3} autoComplete="street-address" /></label>
-          <label>City<input name="city" required autoComplete="address-level2" /></label>
-          <label>Pincode<input name="pin" required pattern="[0-9]{6}" title="6 digit pincode" autoComplete="postal-code" /></label>
-          <label className="full">Payment
+                    <label>City<input name="city" required autoComplete="address-level2" defaultValue={user.city} /></label>
+                    <label>Pincode<input name="pin" required pattern="[0-9]{6}" title="6 digit pincode" autoComplete="postal-code" defaultValue={user.pinCode} /></label>
+                    <label className="full">Payment
             <select name="pay" defaultValue="cod"><option value="cod">Cash on Delivery</option></select>
           </label>
         </form>

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import Logo from './Logo'
 import DeviceMenu from './DeviceMenu'
 import { useStore } from '../../context/StoreContext'
-import { useAuth } from '../../context/AuthContext'
+import { useAuth, fullName } from '../../context/AuthContext'
 
 const css = `
 .header{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid var(--line)}
@@ -44,7 +44,7 @@ export default function Header() {
           <Link to="/search" className="icon-btn" aria-label="Search">{I('M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM21 21l-4.3-4.3')}</Link>
           <Link to="/cart" className="icon-btn" aria-label="Cart">{I('M3 4h2l2.4 11h10.2L20 7H6.2M9 20a1 1 0 1 0 0-.01M17 20a1 1 0 1 0 0-.01')}{cartCount > 0 && <b className="dot">{cartCount}</b>}</Link>
           {user
-            ? <button className="acct" onClick={logout} title={user.email}>Logout</button>
+                         ? <button className="acct" onClick={logout} title={`${fullName(user)} (${user.email})`}>Logout</button>
             : <Link to="/login" className="acct">Login</Link>}
         </div>
       </nav>
