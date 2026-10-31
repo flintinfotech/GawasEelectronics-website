@@ -3,8 +3,9 @@ import { Link } from 'react-router-dom'
 import Logo from './Logo'
 import DeviceMenu from './DeviceMenu'
 import SearchBox from './SearchBox'
+import ProfileMenu from './ProfileMenu'
 import { useStore } from '../../context/StoreContext'
-import { useAuth, fullName } from '../../context/AuthContext'
+import { useAuth } from '../../context/AuthContext'
 
 const css = `
 .header{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid var(--line)}
@@ -27,7 +28,7 @@ const I = (d: string) => <svg width="22" height="22" viewBox="0 0 24 24" fill="n
 export default function Header() {
   const [open, setOpen] = useState(false)
   const { cartCount, wish } = useStore()
-  const { user, logout } = useAuth()
+  const { user } = useAuth()
   const close = () => setOpen(false)
   return (
     <header className="header">
@@ -44,9 +45,7 @@ export default function Header() {
           <SearchBox />
           <Link to="/wishlist" className="icon-btn hide-sm" aria-label="Wishlist">{I('M12 21s-8-5.2-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.8-8 11-8 11z')}{wish.length > 0 && <b className="dot">{wish.length}</b>}</Link>
           <Link to="/cart" className="icon-btn" aria-label="Cart">{I('M3 4h2l2.4 11h10.2L20 7H6.2M9 20a1 1 0 1 0 0-.01M17 20a1 1 0 1 0 0-.01')}{cartCount > 0 && <b className="dot">{cartCount}</b>}</Link>
-          {user
-                         ? <button className="acct" onClick={logout} title={`${fullName(user)} (${user.email})`}>Logout</button>
-            : <Link to="/login" className="acct">Login</Link>}
+          {user ? <ProfileMenu /> : <Link to="/login" className="acct">Login</Link>}
         </div>
       </nav>
       <div className={`drawer-bg ${open ? 'show' : ''}`} onClick={close} />

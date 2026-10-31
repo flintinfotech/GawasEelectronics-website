@@ -1,9 +1,6 @@
 import { Navigate } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
-import AuthShell from '../components/AuthShell'
 
+// The backend has no customer registration API yet, so /register simply opens the login page.
 export default function Register() {
-  const { user } = useAuth()
-  if (user) return <Navigate to="/" replace />
-  return <AuthShell initialMode="register" />
+  return <Navigate to="/login" replace />
 }

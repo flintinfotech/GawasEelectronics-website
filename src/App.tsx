@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom'
 import { StoreProvider } from './context/StoreContext'
 import { AuthProvider } from './context/AuthContext'
 import Header from './components/layout/Header'
@@ -19,6 +19,10 @@ import PrivacyPolicy from './pages/PrivacyPolicy'
 import Disclaimer from './pages/Disclaimer'
 import AboutUs from './pages/AboutUs'
 import ContactUs from './pages/ContactUs'
+import MyAccount from './pages/MyAccount'
+import MyOrders from './pages/MyOrders'
+import EditProfile from './pages/EditProfile'
+import ProtectedRoute from './components/ProtectedRoute'
 
 // Scroll to top on page change
 function ScrollToTop() {
@@ -27,6 +31,17 @@ function ScrollToTop() {
     window.scrollTo(0, 0)
   }, [pathname])
   return null
+}
+
+// Any unknown URL
+function NotFound() {
+  return (
+    <section className="container section" style={{ textAlign: 'center' }}>
+      <h1 className="h2">Page not found</h1>
+      <p className="sub">The page you are looking for does not exist.</p>
+      <Link to="/" className="btn dark">Go to Home</Link>
+    </section>
+  )
 }
 
 export default function App() {
@@ -53,6 +68,12 @@ export default function App() {
               <Route path="/disclaimer" element={<Disclaimer />} />
               <Route path="/about" element={<AboutUs />} />
               <Route path="/contact" element={<ContactUs />} />
+              {/* Customer-only pages (not logged in -> /login) */}
+              <Route path="/my-account" element={<ProtectedRoute><MyAccount /></ProtectedRoute>} />
+              <Route path="/my-wishlist" element={<ProtectedRoute><Wishlist /></ProtectedRoute>} />
+              <Route path="/my-orders" element={<ProtectedRoute><MyOrders /></ProtectedRoute>} />
+              <Route path="/edit-profile" element={<ProtectedRoute><EditProfile /></ProtectedRoute>} />
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </main>
           <Footer />

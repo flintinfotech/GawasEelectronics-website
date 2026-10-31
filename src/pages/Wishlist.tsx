@@ -9,6 +9,7 @@ const css = `
 .wl-img{aspect-ratio:1/1;border-radius:14px;overflow:hidden;background:var(--bone);display:block}
 .wl-img img{width:100%;height:100%;object-fit:cover}
 .wl-name{font-weight:500;line-height:1.3}.wl-name:hover{color:var(--accent)}
+.wl-desc{color:#6b6b72;font-size:13.5px;line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .wl-price s{color:#999;font-size:13px;margin-left:6px}
 .wl-act{display:flex;gap:8px;margin-top:4px;align-items:center}.wl-act .btn.added{background:#e9f6ee;color:#2e9e4f;opacity:1}.wl-act .btn{flex:1;padding:10px 12px;font-size:14px;text-align:center}
 .wl-rm{border:1px solid var(--line);border-radius:999px;width:42px;color:#d33}
@@ -23,7 +24,7 @@ export default function Wishlist() {
   return (
     <section className="container section">
       <style>{css}</style>
-      <h1 className="h2">Wishlist</h1><p className="sub">{wish.length} items</p>
+      <h1 className="h2">My Wishlist</h1><p className="sub">{wish.length} items</p>
       {!wish.length ? (
         <div className="wl-empty"><p>Your wishlist is empty. Tap ♥ on a product to save it.</p><Link to="/products" className="btn dark">Browse Products</Link></div>
       ) : (
@@ -32,6 +33,7 @@ export default function Wishlist() {
             <article key={i.id} className="wl-card">
               <Link to={`/product/${i.id}`} className="wl-img"><img src={i.image} alt={i.name} onError={onImgError('w' + i.id)} /></Link>
               <Link to={`/product/${i.id}`} className="wl-name">{i.name}</Link>
+              {i.description && <p className="wl-desc">{i.description}</p>}
               <div className="wl-price">{formatPrice(i.price)} {i.mrp && <s>{formatPrice(i.mrp)}</s>}</div>
               <div className="wl-act">
                 {inCart(i.id)

@@ -1,6 +1,7 @@
 // STORE: cart + wishlist + buy-now (saved in localStorage, survives refresh)
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { type ApiProduct, priceInfo, productImages } from '../services/productService'
+import { useAuth } from './AuthContext'
 
 // Cart / wishlist keep a small snapshot of the product (no extra API call needed)
 export type StoreItem = {
@@ -11,12 +12,13 @@ export type StoreItem = {
   mrp: number | null // cut price (when discounted)
   stock: number
   qty: number
+  description?: string // shown on the wishlist page
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
 export function toItem(p: ApiProduct, qty = 1): StoreItem {
   const { sell, mrp } = priceInfo(p)
-  return { id: String(p.productInfoId), name: p.productName, image: productImages(p)[0], price: sell, mrp, stock: p.stockQuantity, qty }
+  return { id: String(p.productInfoId), name: p.productName, image: productImages(p)[0], price: sell, mrp, stock: p.stockQuantity, qty, description: p.description }
 }
 
 type Ctx = {
@@ -61,11 +63,20 @@ const clamp = (qty: number, stock: number) => Math.max(1, Math.min(qty, stock > 
 
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<StoreItem[]>(() => load(localStorage, 'gawas-cart', []))
-  const [wish, setWish] = useState<StoreItem[]>(() => load(localStorage, 'gawas-wish', []))
+  // Wishlist belongs to the logged-in customer: key 'gawas-wish-<customerId>' (guests use 'gawas-wish')
+  const { user } = useAuth()
+  const wishKey = user ? `gawas-wish-${user.customerId}` : 'gawas-wish'
+  const [wishBox, setWishBox] = useState<{ key: string; items: StoreItem[] }>(() => ({ key: wishKey, items: load(localStorage, wishKey, []) }))
+  if (wishBox.key !== wishKey) setWishBox({ key: wishKey, items: load(localStorage, wishKey, []) }) // login / logout -> load that wishlist
+  const wish = wishBox.items
+  const setWish = useCallback((fn: (w: StoreItem[]) => StoreItem[]) => setWishBox(b => {
+    const items = fn(b.items)
+    return items === b.items ? b : { ...b, items }
+  }), [])
   const [buyNow, setBuyNow] = useState<StoreItem | null>(() => load(sessionStorage, 'gawas-buynow', null))
 
   useEffect(() => save(localStorage, 'gawas-cart', cart), [cart])
-  useEffect(() => save(localStorage, 'gawas-wish', wish), [wish])
+  useEffect(() => save(localStorage, wishBox.key, wishBox.items), [wishBox])
   useEffect(() => save(sessionStorage, 'gawas-buynow', buyNow), [buyNow])
 
   // Latest stock arrived: update snapshots, and reduce quantity if it is above the new stock
@@ -79,7 +90,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setCart(apply)
     setWish(apply)
     setBuyNow(b => (b ? fix(b) : b))
-  }, [])
+  }, [setWish])
 
   const value = useMemo<Ctx>(() => ({
     cart,
@@ -102,7 +113,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     startBuyNow: item => setBuyNow({ ...item, qty: clamp(item.qty, item.stock) }),
     clearBuyNow: () => setBuyNow(null),
     syncStock,
-  }), [cart, wish, buyNow, syncStock])
+  }), [cart, wish, buyNow, syncStock, setWish])
 
   return <C.Provider value={value}>{children}</C.Provider>
 }

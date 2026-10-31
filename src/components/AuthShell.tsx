@@ -36,7 +36,7 @@ const css = `
 `
 
 const COPY = {
-  login: { h: 'Welcome back', p: 'Log in with your mobile number to see your orders, your saved cases and a faster checkout.' },
+  login: { h: 'Welcome back', p: 'Log in to see your orders, your saved cases and a faster checkout.' },
   register: { h: 'Create your Gawas account', p: 'Save cases to your wishlist, check out faster and keep track of every order.' },
 }
 

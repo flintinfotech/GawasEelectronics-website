@@ -5,6 +5,7 @@ import { useState, type FormEvent } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useStore } from '../context/StoreContext'
 import { useAuth, fullName } from '../context/AuthContext'
+import { saveOrder } from '../services/orderService'
 import AuthForm from '../components/AuthForm'
 import ItemRow, { itemRowCss } from '../components/ItemRow'
 import { formatPrice, getProductById } from '../services/productService'
@@ -44,6 +45,7 @@ export default function Checkout() {
 
   const placeOrder = async (e: FormEvent) => {
     e.preventDefault()
+    const form = new FormData(e.currentTarget as HTMLFormElement) // read the form now (e.currentTarget is empty after an await)
     setBusy(true); setProblems([])
 
     // 1) Re-check the latest stock of every item
@@ -65,7 +67,18 @@ export default function Checkout() {
     // 2) Everything is in stock -> place the order
     // TODO: call the backend order API here (send items + address). The backend must reduce stock.
     recordSale(items) // temporary: remember what was sold (see services/stockLedger.ts)
-    setOrderId('GE' + Date.now().toString().slice(-8))
+    const id = 'GE' + Date.now().toString().slice(-8)
+    if (user) {
+      const text = (k: string) => String(form.get(k) ?? '').trim()
+      // saved on "My Orders" of this customer (see services/orderService.ts)
+      saveOrder(user.customerId, {
+        orderId: id, placedAt: new Date().toISOString(), total,
+        items: items.map(i => ({ id: i.id, name: i.name, image: i.image, price: i.price, qty: i.qty })),
+        paymentMethod: 'Cash on Delivery', paymentStatus: 'Pending (pay on delivery)', orderStatus: 'Placed',
+        address: { name: text('name'), phone: text('phone'), address: text('address'), city: text('city'), pinCode: text('pin') },
+      })
+    }
+    setOrderId(id)
     if (isBuyNow) clearBuyNow(); else clearCart()
     setBusy(false)
   }
@@ -73,7 +86,7 @@ export default function Checkout() {
   if (orderId) return (
     <section className="container section"><style>{css}</style>
       <div className="co-done"><h1 className="h2">Order placed 🎉</h1><p className="sub">Order ID: {orderId}</p>
-        <Link to="/products" className="btn dark">Continue Shopping</Link></div>
+        <Link to="/my-orders" className="btn dark">View My Orders</Link>{' '}<Link to="/products" className="btn dark">Continue Shopping</Link></div>
     </section>
   )
 
@@ -83,10 +96,10 @@ export default function Checkout() {
     </section>
   )
 
-  // Not logged in -> show login / register first (cart and Buy Now item stay saved)
+  // Not logged in -> show login first (cart and Buy Now item stay saved)
   if (!user) return (
     <section className="container section"><style>{css}</style>
-      <AuthForm title="Login or Register to Checkout" />
+      <AuthForm title="Login to Checkout" />
     </section>
   )
 
@@ -109,7 +122,7 @@ export default function Checkout() {
                     <label className="full">Full name<input name="name" required autoComplete="name" defaultValue={fullName(user)} /></label>
           <label>Phone<input name="phone" required type="tel" pattern="[0-9]{10}" title="10 digit mobile number" autoComplete="tel" defaultValue={user.mobileNumber} /></label>
           <label>Email<input name="email" type="email" autoComplete="email" defaultValue={user.email} /></label>
-          <label className="full">Address<textarea name="address" required rows={3} autoComplete="street-address" /></label>
+          <label className="full">Address<textarea name="address" required rows={3} autoComplete="street-address" defaultValue={user.homeAddress} /></label>
                     <label>City<input name="city" required autoComplete="address-level2" defaultValue={user.city} /></label>
                     <label>Pincode<input name="pin" required pattern="[0-9]{6}" title="6 digit pincode" autoComplete="postal-code" defaultValue={user.pinCode} /></label>
                     <label className="full">Payment
