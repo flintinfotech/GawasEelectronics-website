@@ -158,3 +158,19 @@ export const onImgError = (seed: string) => (e: SyntheticEvent<HTMLImageElement>
   e.currentTarget.onerror = null
   e.currentTarget.src = pic(seed)
 }
+
+/* ---------- Search ---------- */
+// "I Phone 14" aur "iphone14" dono match ho: space, - . sab hata ke compare karte hain
+const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '')
+const searchText = (p: ApiProduct) =>
+  norm([p.productName, p.brandName, p.modelName, p.categoryName, p.subCategoryName, p.description, p.feature, ...(p.labelList ?? [])].filter(Boolean).join(' '))
+
+// Navbar ke search box me type kiye text se milte products (naam me match wale pehle)
+export function searchProducts(items: ApiProduct[], q: string): ApiProduct[] {
+  const words = q.trim().split(/\s+/).map(norm).filter(Boolean)
+  if (!words.length) return []
+  const whole = norm(q)
+  return items
+    .filter(p => { const t = searchText(p); return words.every(w => t.includes(w)) })
+    .sort((a, b) => Number(norm(b.productName).includes(whole)) - Number(norm(a.productName).includes(whole)))
+}

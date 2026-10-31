@@ -2,13 +2,14 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import Logo from './Logo'
 import DeviceMenu from './DeviceMenu'
+import SearchBox from './SearchBox'
 import { useStore } from '../../context/StoreContext'
 import { useAuth, fullName } from '../../context/AuthContext'
 
 const css = `
 .header{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid var(--line)}
 .topbar{background:var(--ink);color:#fff;font-size:13px;font-weight:500;display:flex;justify-content:space-around;padding:9px 16px;text-align:center}
-.nav{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+.nav{position:relative;display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
 .nav-links{display:flex;gap:34px;list-style:none;font-weight:500}.nav-links>li{position:relative;padding:24px 0}
 .nav-links a:hover{color:var(--accent)}
 .nav-icons{display:flex;gap:4px}.icon-btn{position:relative;padding:8px;display:grid;place-items:center}
@@ -40,8 +41,8 @@ export default function Header() {
           <li><Link to="/products">Gawas Originals</Link></li>
         </ul>
         <div className="nav-icons">
+          <SearchBox />
           <Link to="/wishlist" className="icon-btn hide-sm" aria-label="Wishlist">{I('M12 21s-8-5.2-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.8-8 11-8 11z')}{wish.length > 0 && <b className="dot">{wish.length}</b>}</Link>
-          <Link to="/search" className="icon-btn" aria-label="Search">{I('M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM21 21l-4.3-4.3')}</Link>
           <Link to="/cart" className="icon-btn" aria-label="Cart">{I('M3 4h2l2.4 11h10.2L20 7H6.2M9 20a1 1 0 1 0 0-.01M17 20a1 1 0 1 0 0-.01')}{cartCount > 0 && <b className="dot">{cartCount}</b>}</Link>
           {user
                          ? <button className="acct" onClick={logout} title={`${fullName(user)} (${user.email})`}>Logout</button>

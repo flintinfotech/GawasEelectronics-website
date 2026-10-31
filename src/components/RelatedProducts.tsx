@@ -20,7 +20,10 @@ const css = `
 export default function RelatedProducts({ product }: { product: ApiProduct }) {
   const ref = useRef<HTMLDivElement>(null)
   // filter ko useMemo me rakhna zaruri hai, warna har render par API dobara chalti hai
-  const filter = useMemo(() => ({ brandId: product.brandId, brandName: product.brandName }), [product.brandId, product.brandName])
+  const filter = useMemo(
+  () => ({ brandName: product.brandName }),
+  [product.brandName]
+)
   const { items } = useProducts(0, 30, filter)
   const list = items.filter(p => p.productInfoId !== product.productInfoId) // abhi wala product hata do
   const go = (d: number) => ref.current?.scrollBy({ left: d * ref.current.clientWidth * 0.8, behavior: 'smooth' })
